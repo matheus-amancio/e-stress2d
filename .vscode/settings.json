@@ -7,5 +7,8 @@
             "source.fixAll.ruff": "explicit",
             "source.organizeImports.ruff": "explicit"
         }
+    },
+    "[mo-python]": {
+        "editor.defaultFormatter": "marimo-team.vscode-marimo"
     }
 }
