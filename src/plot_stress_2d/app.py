@@ -18,7 +18,6 @@ def _():
     from plot_stress_2d.utils import (
         desenhar_arco,
         desenhar_seta,
-        posicao_rotulo,
         rotacionar_pontos,
     )
 
@@ -188,11 +187,15 @@ def _(
     return
 
 
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Representação gráfica dos elementos com orientação adequada na presença das tensões principais
-    """)
+@app.cell
+def _(mo, s_xx_input, s_xy_input, s_yy_input):
+    mo.stop(
+        s_xx_input.value is None or s_yy_input.value is None or s_xy_input.value is None,
+        mo.md("Aguardando valores serem preenchidos..."),
+    )
+    mo.md(
+        "## Representação gráfica dos elementos com orientação adequada na presença das tensões principais"
+    )
     return
 
 
@@ -215,7 +218,9 @@ def _(
     )
 
     principal_state_plotter = PrincipalStressStatePlotter(
-        PrincipalStressState(sigma_1=s1, sigma_2=s2, theta_1_rad=theta1, theta_2_rad=theta2)
+        PrincipalStressState(
+            sigma_1=s1, sigma_2=s2, theta_1_rad=theta1, theta_2_rad=theta2
+        )
     )
     principal_state_plotter.plot()
 
