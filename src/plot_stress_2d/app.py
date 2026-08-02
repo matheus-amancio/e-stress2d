@@ -1,27 +1,29 @@
 import marimo
 
 __generated_with = "0.23.15"
-app = marimo.App()
+app = marimo.App(app_title="e-Stress2D")
 
 
 @app.cell
 def _():
     import marimo as mo
-    import matplotlib.pyplot as plt
     import numpy as np
-    from matplotlib.patches import Polygon
 
     from plot_stress_2d.plotting import (
+        ExtremeShearStressState,
+        ExtremeShearStressStatePlotter,
         PrincipalStressState,
         PrincipalStressStatePlotter,
     )
-    from plot_stress_2d.utils import (
-        desenhar_arco,
-        desenhar_seta,
-        rotacionar_pontos,
-    )
 
-    return PrincipalStressState, PrincipalStressStatePlotter, mo, np
+    return (
+        ExtremeShearStressState,
+        ExtremeShearStressStatePlotter,
+        PrincipalStressState,
+        PrincipalStressStatePlotter,
+        mo,
+        np,
+    )
 
 
 @app.cell(hide_code=True)
@@ -190,7 +192,9 @@ def _(
 @app.cell
 def _(mo, s_xx_input, s_xy_input, s_yy_input):
     mo.stop(
-        s_xx_input.value is None or s_yy_input.value is None or s_xy_input.value is None,
+        s_xx_input.value is None
+        or s_yy_input.value is None
+        or s_xy_input.value is None,
         mo.md("Aguardando valores serem preenchidos..."),
     )
     mo.md(
@@ -213,7 +217,9 @@ def _(
     theta2,
 ):
     mo.stop(
-        s_xx_input.value is None or s_yy_input.value is None or s_xy_input.value is None,
+        s_xx_input.value is None
+        or s_yy_input.value is None
+        or s_xy_input.value is None,
         mo.md("Aguardando valores serem preenchidos..."),
     )
 
@@ -225,6 +231,49 @@ def _(
     principal_state_plotter.plot()
 
     principal_state_plotter.ax
+    return
+
+
+@app.cell
+def _(mo, s_xx_input, s_xy_input, s_yy_input):
+    mo.stop(
+        s_xx_input.value is None or s_yy_input.value is None or s_xy_input.value is None,
+        mo.md("Aguardando valores serem preenchidos..."),
+    )
+    mo.md(
+        "## Representação gráfica dos elementos com orientação adequada na presença das tensões de cisalhamento extremas"
+    )
+    return
+
+
+@app.cell
+def _(
+    ExtremeShearStressState,
+    ExtremeShearStressStatePlotter,
+    R,
+    mo,
+    s_med,
+    s_xx_input,
+    s_xy_input,
+    s_yy_input,
+    theta1,
+    theta2,
+):
+    mo.stop(
+        s_xx_input.value is None
+        or s_yy_input.value is None
+        or s_xy_input.value is None,
+        mo.md("Aguardando valores serem preenchidos..."),
+    )
+
+    extreme_shear_state_plotter = ExtremeShearStressStatePlotter(
+        ExtremeShearStressState(
+            sigma_med=s_med, radius=R, theta_1_rad=theta1, theta_2_rad=theta2
+        )
+    )
+    extreme_shear_state_plotter.plot()
+
+    extreme_shear_state_plotter.ax
     return
 
 

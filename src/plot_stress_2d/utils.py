@@ -24,9 +24,17 @@ def desenhar_seta(ax, inicio, fim, cor="#6f2da8", espessura=4):
 
 
 def desenhar_arco(
-    ax, angulo_inicial, angulo_final, raio=0.75, cor="#c00000", espessura=1, label=""
+    ax,
+    angulo_inicial,
+    angulo_final,
+    raio=0.75,
+    cor="#c00000",
+    espessura=1,
+    label="",
+    text_color="black",
+    text_size=11,
 ):
-    angulo_meio = angulo_final / 2
+    angulo_meio = (angulo_inicial + angulo_final) / 2
     arco = Arc(
         (0, 0),
         2 * raio,
@@ -66,8 +74,8 @@ def desenhar_arco(
     ax.text(
         *pos_texto,
         label,
-        fontsize=11,
-        color="black",
+        fontsize=text_size,
+        color=text_color,
         ha="center",
         va="center",
         zorder=5,
