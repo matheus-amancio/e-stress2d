@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.23.14"
+__generated_with = "0.23.15"
 app = marimo.App()
 
 
@@ -11,205 +11,215 @@ def _():
     import numpy as np
     from matplotlib.patches import Polygon
 
-    from plot_stress_2d.utils import desenhar_seta, rotacionar_pontos, posicao_rotulo, desenhar_arco
-
-    return (
-        Polygon,
+    from plot_stress_2d.plotting import (
+        PrincipalStressState,
+        PrincipalStressStatePlotter,
+    )
+    from plot_stress_2d.utils import (
         desenhar_arco,
         desenhar_seta,
-        mo,
-        np,
-        plt,
         posicao_rotulo,
         rotacionar_pontos,
     )
 
+    return PrincipalStressState, PrincipalStressStatePlotter, mo, np
 
-@app.cell
+
+@app.cell(hide_code=True)
 def _(mo):
-    theta_1_input = mo.ui.number(value=30, label=r"$\theta_1$")
-    theta_2_input = mo.ui.number(value=120, label=r"$\theta_2$")
-    mo.vstack([
-        theta_1_input,
-        theta_2_input,
-    ])
-    return (theta_1_input,)
+    mo.md(r"""
+    # e-Stress2D
+
+    Desenvolvido por:
+    - Matheus Amancio Miranda
+    - Eduardo Nobre Lages
+    """)
+    return
 
 
-@app.cell
-def _(theta_1_input):
-    type(theta_1_input.value)
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Entrada de dados
+    """)
     return
 
 
 @app.cell
-def _(np, theta_1_input):
-    # Tensões e direções principais
-    theta_1 = np.deg2rad(theta_1_input.value)
-    sigma_1 = 100
-    theta_2 = np.deg2rad(theta_1_input.value + 90)
-    sigma_2 = 50
-    return theta_1, theta_2
+def _(mo, np):
+    initial_values = {
+        "s_xx": round(np.random.uniform(-100, 100), 2),
+        "s_yy": round(np.random.uniform(-100, 100), 2),
+        "s_xy": round(np.random.uniform(-100, 100), 2),
+    }
 
+    s_xx_input = mo.ui.number(value=initial_values["s_xx"], label=r"$\sigma_{xx}$")
+    s_yy_input = mo.ui.number(value=initial_values["s_yy"], label=r"$\sigma_{yy}$")
+    s_xy_input = mo.ui.number(value=initial_values["s_xy"], label=r"$\sigma_{xy}$")
 
-@app.cell
-def _(np, rotacionar_pontos, theta_1):
-    # Construção dos vértices do quadrado
-    lado: float = 1.0
-
-    vertices: np.ndarray = np.array(
+    mo.vstack(
         [
-            [-lado / 2, -lado / 2],
-            [lado / 2, -lado / 2],
-            [lado / 2, lado / 2],
-            [-lado / 2, lado / 2],
+            s_xx_input,
+            s_yy_input,
+            s_xy_input,
         ]
     )
+    return s_xx_input, s_xy_input, s_yy_input
 
-    vertices_rotacionados: np.ndarray = rotacionar_pontos(vertices, theta_1)
-    vertices_rotacionados
-    return lado, vertices_rotacionados
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Equacionamento
+
+    $\sigma_{\text{med}} = \dfrac{\sigma_{xx} + \sigma_{yy}}{2}$
+
+    $R = \sqrt{(\dfrac{\sigma_{xx} - \sigma_{yy}}{2})^2 + \sigma_{xy}^2}$
+
+    ### Tensões principais
+
+    $\sigma_{1} = \sigma_{\text{med}} + R$
+
+    $\sigma_{2} = \sigma_{\text{med}} - R$
+
+    ### Direções principais
+
+    Os ângulos $\theta_1$ e $\theta_2$ são definidos a partir de
+
+    $\theta_p = \dfrac{1}{2} \arctan \left( \dfrac{2 \sigma_{xy}}{\sigma_{xx} - \sigma_{yy}} \right)$
+
+    Considerando só ângulos positivos como solução, o menor dos ângulos é $\theta_1$ quando $\sigma_{xy}$ for positivo.
+
+    Definido $\theta_1$, $\theta_2$ é igual a $\theta_1$ mais 90° (ou $\pi/2$ radianos).
+    """)
+    return
 
 
 @app.cell
-def _(np, rotacionar_pontos, theta_1, theta_2):
-    # Construção dos pontos das retas auxiliares das direções principais
+def _(mo, np, s_xx_input, s_xy_input, s_yy_input):
+    mo.stop(
+        s_xx_input.value is None
+        or s_yy_input.value is None
+        or s_xy_input.value is None,
+        mo.md("Aguardando valores serem preenchidos..."),
+    )
 
-    comprimento_reta: float = 2.0
-    reta_1 = np.array([
-        [-comprimento_reta, 0],
-        [comprimento_reta, 0],
-    ])
-    reta_2 = np.array([
-        [0, -comprimento_reta],
-        [0, comprimento_reta],
-    ])
+    sxx = s_xx_input.value
+    syy = s_yy_input.value
+    sxy = s_xy_input.value
 
-    # rotacionar as retas auxiliares
-    reta_1_rotacionada = rotacionar_pontos(reta_1, theta_1)
-    reta_2_rotacionada = rotacionar_pontos(reta_1, theta_2)
-    return reta_1_rotacionada, reta_2_rotacionada
+    if sxx is not None and syy is not None and sxy is not None:
+        # Cálculo das tensões principais
+        s_med = (sxx + syy) / 2
+        R = np.sqrt(((sxx - syy) / 2) ** 2 + sxy**2)
+        s1 = s_med + R
+        s2 = s_med - R
+
+        # Cálculo das direções principais
+        theta_p = 0.5 * np.arctan2(2 * sxy, sxx - syy)
+
+        # Para garantir que estamos trabalhando com números positivos
+        if theta_p < 0:
+            theta_p += np.pi / 2
+        theta_p_deg = np.degrees(theta_p)
+
+        if sxy >= 0:
+            theta1 = theta_p
+        else:
+            theta1 = theta_p + np.pi / 2
+        theta2 = theta1 + np.pi / 2
+
+        theta1_deg = np.degrees(theta1)
+        theta2_deg = np.degrees(theta2)
+    return (
+        R,
+        s1,
+        s2,
+        s_med,
+        theta1,
+        theta1_deg,
+        theta2,
+        theta2_deg,
+        theta_p_deg,
+    )
 
 
 @app.cell
 def _(
-    Polygon,
-    desenhar_arco,
-    desenhar_seta,
-    lado: float,
-    np,
-    plt,
-    posicao_rotulo,
-    reta_1_rotacionada,
-    reta_2_rotacionada,
-    theta_1,
-    theta_2,
-    vertices_rotacionados: "np.ndarray",
+    R,
+    mo,
+    s1,
+    s2,
+    s_med,
+    s_xx_input,
+    s_xy_input,
+    s_yy_input,
+    theta1_deg,
+    theta2_deg,
+    theta_p_deg,
 ):
-    # Construção da figura
-    fig, ax = plt.subplots(figsize=(10, 10))
-
-    ax.set_aspect("equal")
-
-    # adicionando retas
-    ax.plot(
-        reta_1_rotacionada[:, 0],
-        reta_1_rotacionada[:, 1],
-        color="gray",
-        linestyle="--",
-        linewidth=1,
-        zorder=1,
-    )
-    ax.plot(
-        reta_2_rotacionada[:, 0],
-        reta_2_rotacionada[:, 1],
-        color="gray",
-        linestyle="--",
-        linewidth=1,
-        zorder=1,
+    mo.stop(
+        s_xx_input.value is None
+        or s_yy_input.value is None
+        or s_xy_input.value is None,
+        mo.md("Aguardando valores serem preenchidos..."),
     )
 
-    # linha horizontal auxiliar
-    ax.plot([0.0, 2.0], [0.0, 0.0], color="gray", linestyle="--", linewidth=1, zorder=1)
+    mo.md(
+        rf"""
+    ## Resultados
 
-    quadrado = Polygon(
-        vertices_rotacionados,
-        closed=True,
-        edgecolor="black",
-        facecolor="lightgray",
-        zorder=2,
+    $\sigma_{{\text{{med}}}} = {round(s_med, 2)}$
+
+    $R = {round(R, 2)}$
+
+    $\sigma_{{1}} = {round(s1, 2)}$
+
+    $\sigma_{{2}} = {round(s2, 2)}$
+
+    $\theta_{{p}} = {round(theta_p_deg, 2)}^\circ$
+
+    $\theta_{{1}} = {round(theta1_deg, 2)}^\circ$
+
+    $\theta_{{2}} = {round(theta2_deg, 2)}^\circ$
+
+    """
     )
-    # Construção das setas
-    direcao_1 = np.array([np.cos(theta_1), np.sin(theta_1)])
-    direcao_2 = np.array([np.cos(theta_2), np.sin(theta_2)])
+    return
 
-    centro = np.array([0.0, 0.0])
 
-    comprimento_seta = 0.50
-    afastamento = lado / 2
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Representação gráfica dos elementos com orientação adequada na presença das tensões principais
+    """)
+    return
 
-    ponto_base_positivo_1 = centro + afastamento * direcao_1
-    ponta_positiva_1 = ponto_base_positivo_1 + comprimento_seta * direcao_1
 
-    ponto_base_negativo_1 = centro - afastamento * direcao_1
-    ponta_negativa_1 = ponto_base_negativo_1 - comprimento_seta * direcao_1
-
-    desenhar_seta(ax, ponto_base_positivo_1, ponta_positiva_1)
-    desenhar_seta(ax, ponto_base_negativo_1, ponta_negativa_1)
-
-    ponto_base_positivo_2 = centro + afastamento * direcao_2
-    ponta_positiva_2 = ponto_base_positivo_2 + comprimento_seta * direcao_2
-
-    ponto_base_negativo_2 = centro - afastamento * direcao_2
-    ponta_negativa_2 = ponto_base_negativo_2 - comprimento_seta * direcao_2
-
-    desenhar_seta(ax, ponto_base_positivo_2, ponta_positiva_2)
-    desenhar_seta(ax, ponto_base_negativo_2, ponta_negativa_2)
-
-    p_rotulo_sigma_1_positivo = posicao_rotulo(ponta_positiva_1, direcao_1, 0.01)
-    p_rotulo_sigma_1_negativo = posicao_rotulo(ponta_negativa_1, direcao_1, -0.1)
-    ax.text(
-        *p_rotulo_sigma_1_positivo,
-        r"$\sigma_1$",
-        fontsize=16,
-        ha="left",
-        va="bottom",
-    )
-    ax.text(
-        *p_rotulo_sigma_1_negativo,
-        r"$\sigma_1$",
-        fontsize=16,
-        ha="left",
-        va="bottom",
+@app.cell
+def _(
+    PrincipalStressState,
+    PrincipalStressStatePlotter,
+    mo,
+    s1,
+    s2,
+    s_xx_input,
+    s_xy_input,
+    s_yy_input,
+    theta1,
+    theta2,
+):
+    mo.stop(
+        s_xx_input.value is None or s_yy_input.value is None or s_xy_input.value is None,
+        mo.md("Aguardando valores serem preenchidos..."),
     )
 
-    p_rotulo_sigma_2_positivo = posicao_rotulo(ponta_positiva_2, direcao_2, 0.01)
-    p_rotulo_sigma_2_negativo = posicao_rotulo(ponta_negativa_2, direcao_2, -0.1)
-    ax.text(
-        *p_rotulo_sigma_2_positivo,
-        r"$\sigma_2$",
-        fontsize=16,
-        ha="left",
-        va="bottom",
+    principal_state_plotter = PrincipalStressStatePlotter(
+        PrincipalStressState(sigma_1=s1, sigma_2=s2, theta_1_rad=theta1, theta_2_rad=theta2)
     )
-    ax.text(
-        *p_rotulo_sigma_2_negativo,
-        r"$\sigma_2$",
-        fontsize=16,
-        ha="left",
-        va="bottom",
-    )
+    principal_state_plotter.plot()
 
-    desenhar_arco(ax, 0.0, theta_1, raio=1.0, label=r"$\theta_1$")
-    desenhar_arco(ax, 0.0, theta_2, raio=1.225, label=r"$\theta_2$")
-
-    ax.add_patch(quadrado)
-    limit = 1.50
-    ax.set_xlim(-limit, limit)
-    ax.set_ylim(-limit, limit)
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax
+    principal_state_plotter.ax
     return
 
 
