@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from matplotlib.patches import Arc, FancyArrowPatch
 
@@ -11,7 +13,7 @@ def desenhar_seta(ax, inicio, fim, cor="#6f2da8", espessura=4):
     seta = FancyArrowPatch(
         posA=inicio,
         posB=fim,
-        arrowstyle="-|>",
+        arrowstyle="->",
         mutation_scale=22,
         linewidth=espessura,
         color=cor,
@@ -21,12 +23,8 @@ def desenhar_seta(ax, inicio, fim, cor="#6f2da8", espessura=4):
     ax.add_patch(seta)
 
 
-def posicao_rotulo(ponta_seta, direcao, deslocamento=0.05):
-    return ponta_seta + deslocamento * direcao
-
-
 def desenhar_arco(
-    ax, angulo_inicial, angulo_final, raio=0.75, cor="gray", espessura=1, label=""
+    ax, angulo_inicial, angulo_final, raio=0.75, cor="#c00000", espessura=1, label=""
 ):
     angulo_meio = angulo_final / 2
     arco = Arc(
@@ -41,7 +39,25 @@ def desenhar_arco(
         linestyle="--",
     )
     ax.add_patch(arco)
-    raio_texto = raio + 0.05  # um pouco fora do arco
+
+    # Seta no ponto final do arco usando FancyArrowPatch
+    eps = 1e-3
+    tip_x = raio * np.cos(angulo_final)
+    tip_y = raio * np.sin(angulo_final)
+    # Tangente no ponto final (sentido anti-horário)
+    dx = -np.sin(angulo_final)
+    dy = np.cos(angulo_final)
+    arrow = FancyArrowPatch(
+        posA=(tip_x - dx * eps, tip_y - dy * eps),
+        posB=(tip_x + dx * eps, tip_y + dy * eps),
+        arrowstyle="->",
+        color=cor,
+        mutation_scale=10,
+        linewidth=espessura,
+    )
+    ax.add_patch(arrow)
+
+    raio_texto = raio + 0.07  # um pouco fora do arco
 
     pos_texto = np.array(
         [raio_texto * np.cos(angulo_meio), raio_texto * np.sin(angulo_meio)]
@@ -50,9 +66,13 @@ def desenhar_arco(
     ax.text(
         *pos_texto,
         label,
-        fontsize=14,
-        color="red",
+        fontsize=11,
+        color="black",
         ha="center",
         va="center",
         zorder=5,
     )
+
+
+def is_close_to_zero(value, tol=1e-6):
+    return math.isclose(value, 0.0, abs_tol=tol)
