@@ -5,6 +5,7 @@ import numpy as np
 from matplotlib.patches import Polygon
 
 from plot_stress_2d.utils import (
+    add_coordinate_system,
     desenhar_arco,
     desenhar_seta,
     is_close_to_zero,
@@ -214,6 +215,7 @@ class PrincipalStressStatePlotter:
         self.desenhar_angulos()
         self.desenhar_auxiliares()
         self.adicionar_rotulos()
+        add_coordinate_system(self.ax)
 
 
 @dataclass
@@ -511,3 +513,4 @@ class ExtremeShearStressStatePlotter:
         self.desenhar_angulos()
         self.adicionar_rotulos()
         self.desenhar_auxiliares()
+        add_coordinate_system(self.ax)

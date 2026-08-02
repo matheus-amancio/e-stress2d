@@ -84,3 +84,38 @@ def desenhar_arco(
 
 def is_close_to_zero(value, tol=1e-6):
     return math.isclose(value, 0.0, abs_tol=tol)
+
+
+def add_coordinate_system(ax):
+    comprimento_eixo = 0.3
+    origem = (-1.45, -1.45)
+    ax.plot(
+        [origem[0], origem[0] + comprimento_eixo],
+        [origem[1], origem[1]],
+        color="black",
+        linewidth=1,
+    )
+    ax.plot(
+        [origem[0], origem[0]],
+        [origem[1], origem[1] + comprimento_eixo],
+        color="black",
+        linewidth=1,
+    )
+    ax.text(
+        origem[0] + comprimento_eixo + 0.05,
+        origem[1],
+        "x",
+        fontsize=10,
+        color="black",
+        ha="center",
+        va="center",
+    )
+    ax.text(
+        origem[0],
+        origem[1] + comprimento_eixo + 0.05,
+        "y",
+        fontsize=10,
+        color="black",
+        ha="center",
+        va="center",
+    )
