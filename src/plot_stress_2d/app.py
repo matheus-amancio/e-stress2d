@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.23.15"
+__generated_with = "0.23.16"
 app = marimo.App(app_title="e-Stress2D")
 
 
@@ -97,6 +97,27 @@ def _(mo):
 
 
 @app.cell
+def _(mo):
+    mo.md(r"""
+    ### Observação sobre as unidades e homogeneidade
+
+    Este sistema não impõe um sistema de unidades fixo. Portanto, é fundamental manter a **homogeneidade das unidades** entre os dados de entrada e os resultados.
+
+    A unidade adotada para os componentes cartesianos de tensão ($\sigma_{xx}$, $\sigma_{yy}$ e $\sigma_{xy}$) determina diretamente a unidade dos valores calculados. Não há conversão automática de unidades pela aplicação. Assim, deve haver total consistência para os resultados:
+
+    - $\sigma_{\text{med}}$
+    - $R$
+    - $\sigma_1$
+    - $\sigma_2$
+
+    **Exemplo:** Se as tensões de entrada forem inseridas em **MPa**, todos os valores de saída serão calculados e apresentados em **MPa**. O mesmo se aplica para **kPa**, **kgf/cm²**, **psi** ou qualquer outra unidade de tensão, desde que seja mantida a mesma base em todos os campos de entrada.
+
+    Os ângulos, por outro lado, são expressos em **graus** ($^\circ$), salvo indicação contrária na interface.
+    """)
+    return
+
+
+@app.cell
 def _(mo, np, s_xx_input, s_xy_input, s_yy_input):
     mo.stop(
         s_xx_input.value is None
@@ -160,9 +181,7 @@ def _(
     theta_p_deg,
 ):
     mo.stop(
-        s_xx_input.value is None
-        or s_yy_input.value is None
-        or s_xy_input.value is None,
+        s_xx_input.value is None or s_yy_input.value is None or s_xy_input.value is None,
         mo.md("Aguardando valores serem preenchidos..."),
     )
 
@@ -178,7 +197,7 @@ def _(
 
     $\sigma_{{2}} = {round(s2, 2)}$
 
-    $\theta_{{p}} = {round(theta_p_deg, 2)}^\circ$
+    $\theta_{{p1}} = {round(theta_p_deg, 2)}^\circ \text{{ e }} \theta_{{p2}} = {round(theta_p_deg + 90, 2)}^\circ$
 
     $\theta_{{1}} = {round(theta1_deg, 2)}^\circ$
 
