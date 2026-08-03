@@ -14,6 +14,8 @@ def _():
         ExtremeShearStressStatePlotter,
         PrincipalStressState,
         PrincipalStressStatePlotter,
+        StressStatePlotter,
+        StressState,
     )
 
     return (
@@ -21,6 +23,8 @@ def _():
         ExtremeShearStressStatePlotter,
         PrincipalStressState,
         PrincipalStressStatePlotter,
+        StressState,
+        StressStatePlotter,
         mo,
         np,
     )
@@ -158,6 +162,9 @@ def _(mo, np, s_xx_input, s_xy_input, s_yy_input):
         s1,
         s2,
         s_med,
+        sxx,
+        sxy,
+        syy,
         theta1,
         theta1_deg,
         theta2,
@@ -205,6 +212,50 @@ def _(
 
     """
     )
+    return
+
+
+@app.cell
+def _(mo, s_xx_input, s_xy_input, s_yy_input):
+    mo.stop(
+        s_xx_input.value is None
+        or s_yy_input.value is None
+        or s_xy_input.value is None,
+        mo.md("Aguardando valores serem preenchidos..."),
+    )
+    mo.md(
+        "## Representação gráfica planificada do estado de tensões"
+    )
+    return
+
+
+@app.cell
+def _(
+    StressState,
+    StressStatePlotter,
+    mo,
+    s_xx_input,
+    s_xy_input,
+    s_yy_input,
+    sxx,
+    sxy,
+    syy,
+):
+    mo.stop(
+        s_xx_input.value is None
+        or s_yy_input.value is None
+        or s_xy_input.value is None,
+        mo.md("Aguardando valores serem preenchidos..."),
+    )
+
+    stress_state_plotter = StressStatePlotter(
+        StressState(
+            sigma_x=sxx, sigma_y=syy, sigma_xy=sxy  # ty:ignore[invalid-argument-type]
+        )
+    )
+    stress_state_plotter.plot()
+
+    stress_state_plotter.ax
     return
 
 

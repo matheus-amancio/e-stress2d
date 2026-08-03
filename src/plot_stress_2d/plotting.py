@@ -514,3 +514,353 @@ class ExtremeShearStressStatePlotter:
         self.adicionar_rotulos()
         self.desenhar_auxiliares()
         add_coordinate_system(self.ax)
+
+
+@dataclass
+class StressState:
+    sigma_x: float
+    sigma_y: float
+    sigma_xy: float
+
+
+class StressStatePlotter:
+    def __init__(self, stress_state: StressState):
+        self.stress_state = stress_state
+
+    def criar_figura(self):
+        fig, ax = plt.subplots(figsize=(10, 10))
+        ax.set_aspect("equal")
+        self.fig = fig
+        self.ax = ax
+        self.configurar_eixos()
+
+    def configurar_eixos(self):
+        limit = 1.50
+        self.ax.set_xlim(-limit, limit)
+        self.ax.set_ylim(-limit, limit)
+        self.ax.set_xticks([])
+        self.ax.set_yticks([])
+
+    def desenhar_quadrado(self):
+        lado = 1.0
+        vertices = np.array(
+            [
+                [-lado / 2, -lado / 2],
+                [lado / 2, -lado / 2],
+                [lado / 2, lado / 2],
+                [-lado / 2, lado / 2],
+            ]
+        )
+        quadrado = Polygon(
+            vertices,
+            closed=True,
+            edgecolor="#ff9999",
+            facecolor="#ffcccc",
+            zorder=2,
+        )
+        self.ax.add_patch(quadrado)
+
+    def desenhar_setas(self):
+        sigma_xx = self.stress_state.sigma_x
+        sigma_yy = self.stress_state.sigma_y
+        sigma_xy = self.stress_state.sigma_xy
+
+        lado = 1.0
+        comprimento_seta = 0.50
+        afastamento = 0.05
+        cor_seta = "#ff0000"
+
+        if not is_close_to_zero(sigma_xx):
+            if sigma_xx > 0:
+                desenhar_seta(
+                    self.ax,
+                    [-(lado / 2) - afastamento, 0],
+                    [-(lado / 2) - afastamento - comprimento_seta, 0],
+                    cor=cor_seta,
+                )
+                desenhar_seta(
+                    self.ax,
+                    [(lado / 2) + afastamento, 0],
+                    [(lado / 2) + afastamento + comprimento_seta, 0],
+                    cor=cor_seta,
+                )
+            else:
+                desenhar_seta(
+                    self.ax,
+                    [-(lado / 2) - afastamento - comprimento_seta, 0],
+                    [-(lado / 2) - afastamento, 0],
+                    cor=cor_seta,
+                )
+                desenhar_seta(
+                    self.ax,
+                    [(lado / 2) + afastamento + comprimento_seta, 0],
+                    [(lado / 2) + afastamento, 0],
+                    cor=cor_seta,
+                )
+
+        if not is_close_to_zero(sigma_yy):
+            if sigma_yy > 0:
+                desenhar_seta(
+                    self.ax,
+                    [0, -(lado / 2) - afastamento],
+                    [0, -(lado / 2) - afastamento - comprimento_seta],
+                    cor=cor_seta,
+                )
+                desenhar_seta(
+                    self.ax,
+                    [0, (lado / 2) + afastamento],
+                    [0, (lado / 2) + afastamento + comprimento_seta],
+                    cor=cor_seta,
+                )
+            else:
+                desenhar_seta(
+                    self.ax,
+                    [0, -(lado / 2) - afastamento - comprimento_seta],
+                    [0, -(lado / 2) - afastamento],
+                    cor=cor_seta,
+                )
+                desenhar_seta(
+                    self.ax,
+                    [0, (lado / 2) + afastamento + comprimento_seta],
+                    [0, (lado / 2) + afastamento],
+                    cor=cor_seta,
+                )
+
+        if not is_close_to_zero(sigma_xy):
+            # face positiva x
+            x_centro_face_positiva_x = lado / 2 + afastamento
+            y_inicio_face_positiva_x = -comprimento_seta / 2
+            y_fim_face_positiva_x = comprimento_seta / 2
+
+            # face negativa x
+            x_centro_face_negativa_x = -lado / 2 - afastamento
+            y_inicio_face_negativa_x = comprimento_seta / 2
+            y_fim_face_negativa_x = -comprimento_seta / 2
+
+            # face positiva y
+            y_centro_face_positiva_y = lado / 2 + afastamento
+            x_inicio_face_positiva_y = -comprimento_seta / 2
+            x_fim_face_positiva_y = comprimento_seta / 2
+
+            # face negativa y
+            y_centro_face_negativa_y = -lado / 2 - afastamento
+            x_inicio_face_negativa_y = comprimento_seta / 2
+            x_fim_face_negativa_y = -comprimento_seta / 2
+
+            if sigma_xy > 0:
+                # faces positivas
+                desenhar_seta(
+                    self.ax,
+                    [x_centro_face_positiva_x, y_inicio_face_positiva_x],
+                    [x_centro_face_positiva_x, y_fim_face_positiva_x],
+                    cor=cor_seta,
+                )
+                desenhar_seta(
+                    self.ax,
+                    [x_inicio_face_positiva_y, y_centro_face_positiva_y],
+                    [x_fim_face_positiva_y, y_centro_face_positiva_y],
+                    cor=cor_seta,
+                )
+                # faces negativas
+                desenhar_seta(
+                    self.ax,
+                    [x_centro_face_negativa_x, y_inicio_face_negativa_x],
+                    [x_centro_face_negativa_x, y_fim_face_negativa_x],
+                    cor=cor_seta,
+                )
+                desenhar_seta(
+                    self.ax,
+                    [x_inicio_face_negativa_y, y_centro_face_negativa_y],
+                    [x_fim_face_negativa_y, y_centro_face_negativa_y],
+                    cor=cor_seta,
+                )
+            else:
+                # faces positivas
+                desenhar_seta(
+                    self.ax,
+                    [x_centro_face_positiva_x, y_fim_face_positiva_x],
+                    [x_centro_face_positiva_x, y_inicio_face_positiva_x],
+                    cor=cor_seta,
+                )
+                desenhar_seta(
+                    self.ax,
+                    [x_fim_face_positiva_y, y_centro_face_positiva_y],
+                    [x_inicio_face_positiva_y, y_centro_face_positiva_y],
+                    cor=cor_seta,
+                )
+                # faces negativas
+                desenhar_seta(
+                    self.ax,
+                    [x_centro_face_negativa_x, y_fim_face_negativa_x],
+                    [x_centro_face_negativa_x, y_inicio_face_negativa_x],
+                    cor=cor_seta,
+                )
+                desenhar_seta(
+                    self.ax,
+                    [x_fim_face_negativa_y, y_centro_face_negativa_y],
+                    [x_inicio_face_negativa_y, y_centro_face_negativa_y],
+                    cor=cor_seta,
+                )
+
+    def adicionar_rotulos(self):
+        sigma_xx = self.stress_state.sigma_x
+        sigma_yy = self.stress_state.sigma_y
+        sigma_xy = self.stress_state.sigma_xy
+
+        lado = 1.0
+        comprimento_seta = 0.50
+        afastamento = 0.05
+        afastamento_vertical = 0.05
+
+        if not is_close_to_zero(sigma_xx):
+            pos_rotulo_pos_x = [
+                -(lado / 2) - afastamento - comprimento_seta,
+                afastamento_vertical,
+            ]
+            pos_rotulo_neg_x = [
+                (lado / 2) + afastamento + comprimento_seta,
+                afastamento_vertical,
+            ]
+            self.ax.text(
+                *pos_rotulo_pos_x,
+                rf"$\sigma_{{xx}} = {abs(sigma_xx):.2f}$",
+                fontsize=11,
+                color="black",
+                ha="center",
+                va="center",
+                zorder=5,
+            )
+            self.ax.text(
+                *pos_rotulo_neg_x,
+                rf"$\sigma_{{xx}} = {abs(sigma_xx):.2f}$",
+                fontsize=11,
+                color="black",
+                ha="center",
+                va="center",
+                zorder=5,
+            )
+
+        if not is_close_to_zero(sigma_yy):
+            pos_rotulo_pos_y = [
+                0,
+                (lado / 2) + afastamento + comprimento_seta + afastamento_vertical,
+            ]
+            pos_rotulo_neg_y = [
+                0,
+                -(lado / 2) - afastamento - comprimento_seta - afastamento_vertical,
+            ]
+            self.ax.text(
+                *pos_rotulo_pos_y,
+                rf"$\sigma_{{yy}} = {abs(sigma_yy):.2f}$",
+                fontsize=11,
+                color="black",
+                ha="center",
+                va="center",
+                zorder=5,
+            )
+            self.ax.text(
+                *pos_rotulo_neg_y,
+                rf"$\sigma_{{yy}} = {abs(sigma_yy):.2f}$",
+                fontsize=11,
+                color="black",
+                ha="center",
+                va="center",
+                zorder=5,
+            )
+
+        if not is_close_to_zero(sigma_xy):
+            x_face_positiva_x = lado / 2 + afastamento
+            y_inicio_face_positiva_x = -comprimento_seta / 2 - afastamento_vertical
+            y_fim_face_positiva_x = comprimento_seta / 2 + afastamento_vertical
+
+            y_face_positiva_y = lado / 2 + afastamento
+            x_inicio_face_positiva_y = -comprimento_seta / 2 - afastamento_vertical
+            x_fim_face_positiva_y = comprimento_seta / 2 + afastamento_vertical
+
+            x_face_negativa_x = -lado / 2 - afastamento
+            y_inicio_face_negativa_x = comprimento_seta / 2 + afastamento_vertical
+            y_fim_face_negativa_x = -comprimento_seta / 2 - afastamento_vertical
+
+            y_face_negativa_y = -lado / 2 - afastamento
+            x_inicio_face_negativa_y = comprimento_seta / 2 + afastamento_vertical
+            x_fim_face_negativa_y = -comprimento_seta / 2 - afastamento_vertical
+
+            if sigma_xy > 0:
+                pos_rotulo_pos_x = [
+                    x_face_positiva_x,
+                    y_fim_face_positiva_x,
+                ]
+                pos_rotulo_pos_y = [
+                    x_fim_face_positiva_y,
+                    y_face_positiva_y,
+                ]
+
+                pos_rotulo_neg_x = [
+                    x_face_negativa_x,
+                    y_fim_face_negativa_x,
+                ]
+                pos_rotulo_neg_y = [
+                    x_fim_face_negativa_y,
+                    y_face_negativa_y,
+                ]
+            else:
+                pos_rotulo_pos_x = [
+                    x_face_positiva_x,
+                    y_inicio_face_positiva_x,
+                ]
+                pos_rotulo_pos_y = [
+                    x_inicio_face_positiva_y,
+                    y_face_positiva_y,
+                ]
+
+                pos_rotulo_neg_x = [
+                    x_face_negativa_x,
+                    y_inicio_face_negativa_x,
+                ]
+                pos_rotulo_neg_y = [
+                    x_inicio_face_negativa_y,
+                    y_face_negativa_y,
+                ]
+            self.ax.text(
+                *pos_rotulo_pos_x,
+                rf"$\sigma_{{xy}} = {abs(sigma_xy):.2f}$",
+                fontsize=11,
+                color="black",
+                ha="left",
+                va="center",
+                zorder=5,
+            )
+            self.ax.text(
+                *pos_rotulo_pos_y,
+                rf"$\sigma_{{xy}} = {abs(sigma_xy):.2f}$",
+                fontsize=11,
+                color="black",
+                ha="left" if sigma_xy > 0 else "right",
+                va="center",
+                zorder=5,
+            )
+            self.ax.text(
+                *pos_rotulo_neg_x,
+                rf"$\sigma_{{xy}} = {abs(sigma_xy):.2f}$",
+                fontsize=11,
+                color="black",
+                ha="right",
+                va="center",
+                zorder=5,
+            )
+            self.ax.text(
+                *pos_rotulo_neg_y,
+                rf"$\sigma_{{xy}} = {abs(sigma_xy):.2f}$",
+                fontsize=11,
+                color="black",
+                ha="right" if sigma_xy > 0 else "left",
+                va="center",
+                zorder=5,
+            )
+
+    def plot(self):
+        self.criar_figura()
+        self.desenhar_quadrado()
+        self.desenhar_setas()
+        self.adicionar_rotulos()
+        add_coordinate_system(self.ax)
