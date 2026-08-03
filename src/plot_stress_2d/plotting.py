@@ -511,16 +511,7 @@ class ExtremeShearStressStatePlotter:
 
         # Tensões de cisalhamento
         inicio_pos = centro_face_positiva_1 - (comprimento_seta / 2) * tangente_1
-        fim_pos = centro_face_positiva_1 + (comprimento_seta / 2) * tangente_1
-
-        inicio_neg = centro_face_negativa_1 + (comprimento_seta / 2) * tangente_1
-        fim_neg = centro_face_negativa_1 - (comprimento_seta / 2) * tangente_1
-
         inicio_pos_2 = centro_face_positiva_2 + (comprimento_seta / 2) * tangente_2
-        fim_pos_2 = centro_face_positiva_2 - (comprimento_seta / 2) * tangente_2
-
-        inicio_neg_2 = centro_face_negativa_2 - (comprimento_seta / 2) * tangente_2
-        fim_neg_2 = centro_face_negativa_2 + (comprimento_seta / 2) * tangente_2
 
         offset = 0.25
         s_cis_positions = [
