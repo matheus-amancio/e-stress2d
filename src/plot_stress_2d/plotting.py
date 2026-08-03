@@ -138,7 +138,29 @@ class PrincipalStressStatePlotter:
         sigma_1 = self.principal_stress_state.sigma_1
         sigma_2 = self.principal_stress_state.sigma_2
 
-        direcao_1 = np.array([np.cos(theta_1), np.sin(theta_1)])
+        flag_theta_1 = False
+        flag_theta_2 = False
+
+        if (
+            np.radians(0) <= theta_1 <= np.radians(30)
+            or np.radians(150) <= theta_1 <= np.radians(210)
+            or np.radians(330) <= theta_1 <= np.radians(360)
+        ):
+            flag_theta_1 = True
+
+        if (
+            np.radians(0) <= theta_2 <= np.radians(30)
+            or np.radians(150) <= theta_2 <= np.radians(210)
+            or np.radians(330) <= theta_2 <= np.radians(360)
+        ):
+            flag_theta_2 = True
+
+        direcao_1 = np.array(
+            [
+                np.cos(theta_1),
+                np.sin(theta_1),
+            ]
+        )
         direcao_2 = np.array([np.cos(theta_2), np.sin(theta_2)])
 
         centro = np.array([0.0, 0.0])
@@ -159,14 +181,15 @@ class PrincipalStressStatePlotter:
         ponta_negativa_2 = ponto_base_negativo_2 - comprimento_seta * direcao_2
 
         if not is_close_to_zero(sigma_1):
-            pos_rotulo_pos_1 = ponta_positiva_1 + 0.07 * direcao_1
-            pos_rotulo_neg_1 = ponta_negativa_1 - 0.07 * direcao_1
+            mult_factor = 0.0 if flag_theta_1 else 0.07
+            pos_rotulo_pos_1 = ponta_positiva_1 + mult_factor * direcao_1
+            pos_rotulo_neg_1 = ponta_negativa_1 - mult_factor * direcao_1
             self.ax.text(
                 *pos_rotulo_pos_1,
                 rf"$\sigma_1 = {abs(sigma_1):.2f}$",
                 fontsize=11,
                 color="black",
-                ha="center",
+                ha="center" if not flag_theta_1 else "left",
                 va="center",
                 zorder=5,
             )
@@ -175,20 +198,21 @@ class PrincipalStressStatePlotter:
                 rf"$\sigma_1 = {abs(sigma_1):.2f}$",
                 fontsize=11,
                 color="black",
-                ha="center",
+                ha="center" if not flag_theta_1 else "right",
                 va="center",
                 zorder=5,
             )
 
         if not is_close_to_zero(sigma_2):
-            pos_rotulo_pos_2 = ponta_positiva_2 + 0.07 * direcao_2
-            pos_rotulo_neg_2 = ponta_negativa_2 - 0.07 * direcao_2
+            mult_factor = 0.0 if flag_theta_2 else 0.07
+            pos_rotulo_pos_2 = ponta_positiva_2 + mult_factor * direcao_2
+            pos_rotulo_neg_2 = ponta_negativa_2 - mult_factor * direcao_2
             self.ax.text(
                 *pos_rotulo_pos_2,
                 rf"$\sigma_2 = {abs(sigma_2):.2f}$",
                 fontsize=11,
                 color="black",
-                ha="center",
+                ha="center" if not flag_theta_2 else "left",
                 va="center",
                 zorder=5,
             )
@@ -197,7 +221,7 @@ class PrincipalStressStatePlotter:
                 rf"$\sigma_2 = {abs(sigma_2):.2f}$",
                 fontsize=11,
                 color="black",
-                ha="center",
+                ha="center" if not flag_theta_2 else "right",
                 va="center",
                 zorder=5,
             )
@@ -410,6 +434,22 @@ class ExtremeShearStressStatePlotter:
         aux_theta_1 = theta_1 + np.pi / 4
         aux_theta_2 = theta_2 + np.pi / 4
 
+        flag_theta_1 = False
+        flag_theta_2 = False
+
+        if (
+            np.radians(0) <= aux_theta_1 <= np.radians(30)
+            or np.radians(150) <= aux_theta_1 <= np.radians(210)
+            or np.radians(330) <= aux_theta_1 <= np.radians(360)
+        ):
+            flag_theta_1 = True
+        if (
+            np.radians(0) <= aux_theta_2 <= np.radians(30)
+            or np.radians(150) <= aux_theta_2 <= np.radians(210)
+            or np.radians(330) <= aux_theta_2 <= np.radians(360)
+        ):
+            flag_theta_2 = True
+
         sigma_med = self.extreme_shear_stress_state.sigma_med
         R = self.extreme_shear_stress_state.radius
 
@@ -444,12 +484,19 @@ class ExtremeShearStressStatePlotter:
         ponta_negativa_2 = ponto_base_negativo_2 - comprimento_seta * direcao_2
 
         if not is_close_to_zero(sigma_med):
-            offset = 0.07
+            offset_theta_1 = 0.07 if not flag_theta_1 else 0.03
+            offset_theta_2 = 0.07 if not flag_theta_2 else 0.03
             s_med_positions = [
-                ponta_positiva_1 + offset * direcao_1,
-                ponta_negativa_1 - offset * direcao_1,
-                ponta_positiva_2 + offset * direcao_2,
-                ponta_negativa_2 - offset * direcao_2,
+                ponta_positiva_1 + offset_theta_1 * direcao_1,
+                ponta_negativa_1 - offset_theta_1 * direcao_1,
+                ponta_positiva_2 + offset_theta_2 * direcao_2,
+                ponta_negativa_2 - offset_theta_2 * direcao_2,
+            ]
+            ha = [
+                "center" if not flag_theta_1 else "right",
+                "center" if not flag_theta_1 else "left",
+                "center" if not flag_theta_2 else "right",
+                "center" if not flag_theta_2 else "left",
             ]
             for pos in s_med_positions:
                 self.ax.text(
@@ -457,7 +504,7 @@ class ExtremeShearStressStatePlotter:
                     rf"$\sigma_{{med}} = {abs(sigma_med):.2f}$",
                     fontsize=11,
                     color="black",
-                    ha="center",
+                    ha=ha.pop(0),
                     va="center",
                     zorder=5,
                 )
@@ -489,6 +536,12 @@ class ExtremeShearStressStatePlotter:
                 ha="center",
                 va="center",
                 zorder=5,
+                bbox=dict(
+                    facecolor="white",
+                    edgecolor="none",
+                    boxstyle="square,pad=0.10",
+                    alpha=0.8,
+                ),
             )
 
     def desenhar_auxiliares(self):
