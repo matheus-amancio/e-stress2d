@@ -65,7 +65,7 @@ def desenhar_arco(
     )
     ax.add_patch(arrow)
 
-    raio_texto = raio + 0.07  # um pouco fora do arco
+    raio_texto = raio  # um pouco fora do arco
 
     pos_texto = np.array(
         [raio_texto * np.cos(angulo_meio), raio_texto * np.sin(angulo_meio)]
@@ -79,6 +79,9 @@ def desenhar_arco(
         ha="center",
         va="center",
         zorder=5,
+        bbox=dict(
+            facecolor="white", edgecolor="none", boxstyle="square,pad=0.10", alpha=0.8
+        ),
     )
 
 
