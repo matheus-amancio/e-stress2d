@@ -759,11 +759,11 @@ class StressStatePlotter:
         if not is_close_to_zero(sigma_xx):
             pos_rotulo_pos_x = [
                 -(lado / 2) - afastamento - comprimento_seta,
-                afastamento_vertical,
+                afastamento_vertical + 0.02,
             ]
             pos_rotulo_neg_x = [
                 (lado / 2) + afastamento + comprimento_seta,
-                afastamento_vertical,
+                afastamento_vertical + 0.02,
             ]
             self.ax.text(
                 *pos_rotulo_pos_x,
