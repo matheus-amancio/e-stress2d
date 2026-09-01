@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.23.16"
+__generated_with = "0.24.0"
 app = marimo.App(app_title="e-Stress2D")
 
 
@@ -142,7 +142,7 @@ def _(mo, np, s_xx_input, s_xy_input, s_yy_input):
         s2 = s_med - R
 
         # Cálculo das direções principais
-        theta_p = 0.5 * np.arctan2(2 * sxy, sxx - syy)
+        theta_p = 0.5 * np.arctan(2 * sxy / (sxx - syy))
 
         # Para garantir que estamos trabalhando com números positivos
         if theta_p < 0:
