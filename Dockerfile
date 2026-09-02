@@ -15,4 +15,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "uv run marimo run src/plot_stress_2d/app.py --no-skew-protection --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "uv run marimo run --no-skew-protection --no-token src/plot_stress_2d/app.py --host 0.0.0.0 --port ${PORT}"]
