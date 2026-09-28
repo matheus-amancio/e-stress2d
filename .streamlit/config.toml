@@ -1,0 +1,9 @@
+[client]
+showErrorDetails = "full"
+toolbarMode = "minimal"
+
+[logger]
+level = "info"
+
+[server]
+headless = true
